@@ -1,5 +1,9 @@
 version: '1.0'
 
+volumes:
+  db-data:
+    driver: local
+
 services:
 
   postgres:
@@ -8,5 +12,8 @@ services:
     ports:
       - "5432:5432"
     environment:
+      - POSTGRES_DB=course_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=0000
+    volumes:
+      - db-data:/var/lib/postgresql/data
