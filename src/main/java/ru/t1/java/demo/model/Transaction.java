@@ -33,8 +33,6 @@ public class Transaction {
     private LocalDateTime completedAt;
 
     @OneToOne
-    private Account clientFrom;
+    private Account account;
 
-    @OneToOne
-    private Account clientTo;
 }
