@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 import ru.t1.java.demo.model.DataSourceErrorLog;
 import ru.t1.java.demo.repository.ErrorLogRepository;
@@ -20,11 +19,6 @@ import java.io.StringWriter;
 public class LogDataSourceErrorAspect {
 
     private final ErrorLogRepository errorLogRepository;
-
-    @Pointcut("@within(ru.t1.java.demo.*)")
-    public void logDataSourceErrorPointcut() {
-
-    }
 
     @AfterThrowing(
             value = "@annotation(ru.t1.java.demo.aop.annotation.LogDataSourceError)",
