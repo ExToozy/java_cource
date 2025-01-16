@@ -5,9 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 import ru.t1.java.demo.model.DataSourceErrorLog;
 import ru.t1.java.demo.repository.ErrorLogRepository;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 @Aspect
 @Component
@@ -17,20 +21,31 @@ public class LogDataSourceErrorAspect {
 
     private final ErrorLogRepository errorLogRepository;
 
-    @AfterThrowing(value = "@annotation(ru.t1.java.demo.aop.annotation.LogDataSourceError)", throwing = "e")
+    @Pointcut("@within(ru.t1.java.demo.*)")
+    public void logDataSourceErrorPointcut() {
+
+    }
+
+    @AfterThrowing(
+            value = "@annotation(ru.t1.java.demo.aop.annotation.LogDataSourceError)",
+            throwing = "e"
+    )
     public void LogDataSourceErrorAfterThrowing(JoinPoint joinPoint, Exception e) {
         log.info("Сохраняем сообщение об ошибке");
         errorLogRepository.save(
                 DataSourceErrorLog.builder()
                         .methodSignature(joinPoint.getSignature().toLongString())
-                        .stackTrace(getFirstTraceElement(e))
+                        .stackTrace(toStackTraceString(e))
                         .errorMessage(e.getMessage())
                         .build()
         );
 
     }
 
-    private String getFirstTraceElement(Exception e) {
-        return e.getStackTrace()[0].toString();
+    private String toStackTraceString(Exception e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        return sw.toString();
     }
 }
