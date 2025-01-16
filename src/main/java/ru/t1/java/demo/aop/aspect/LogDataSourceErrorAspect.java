@@ -23,14 +23,14 @@ public class LogDataSourceErrorAspect {
         errorLogRepository.save(
                 DataSourceErrorLog.builder()
                         .methodSignature(joinPoint.getSignature().toLongString())
-                        .stackTrace(getLastTraceElement(e))
+                        .stackTrace(getFirstTraceElement(e))
                         .errorMessage(e.getMessage())
                         .build()
         );
 
     }
 
-    private String getLastTraceElement(Exception e) {
+    private String getFirstTraceElement(Exception e) {
         return e.getStackTrace()[0].toString();
     }
 }
