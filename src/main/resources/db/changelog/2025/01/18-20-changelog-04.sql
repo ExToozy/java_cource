@@ -22,7 +22,7 @@ VALUES ('DEBIT', 1500.00, 1),
        ('DEBIT', 2000.00, 7),
        ('CREDIT', 300.00, 8);
 
-INSERT INTO transaction (amount, completed_at, client_id)
+INSERT INTO transaction (amount, completed_at, account_id)
 VALUES (500.00, '2023-10-01 10:00:00', 1),
        (-500.00, '2023-10-01 10:00:00', 2),
        (1500.00, '2023-10-02 11:30:00', 2),
