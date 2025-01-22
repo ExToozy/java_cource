@@ -24,7 +24,7 @@ public class LogDataSourceErrorAspect {
             value = "@annotation(ru.t1.java.demo.aop.annotation.LogDataSourceError)",
             throwing = "e"
     )
-    public void LogDataSourceErrorAfterThrowing(JoinPoint joinPoint, Exception e) {
+    public void logDataSourceErrorAfterThrowing(JoinPoint joinPoint, Exception e) {
         log.info("Сохраняем сообщение об ошибке");
         errorLogRepository.save(
                 DataSourceErrorLog.builder()
