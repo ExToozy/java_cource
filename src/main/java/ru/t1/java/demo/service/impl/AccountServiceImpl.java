@@ -7,6 +7,8 @@ import ru.t1.java.demo.model.Account;
 import ru.t1.java.demo.repository.AccountRepository;
 import ru.t1.java.demo.service.AccountService;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
@@ -14,8 +16,13 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
 
     @Override
-    public Account create(Account dto) {
-        return accountRepository.save(dto);
+    public Account create(Account account) {
+        return accountRepository.save(account);
+    }
+
+    @Override
+    public List<Account> createMany(List<Account> accounts) {
+        return accountRepository.saveAll(accounts);
     }
 
     @Override
