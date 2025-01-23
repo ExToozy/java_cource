@@ -20,15 +20,15 @@ public class KafkaTransactionProducer {
     @Value("${t1.kafka.topic.transfer_transactions}")
     private String transferTransactionTopicName;
 
-    public void sendTransaction(ReplenishTransactionDto replenishTransactionDto) {
-        send(replenishTransactionTopicName, replenishTransactionDto);
+    public void send(ReplenishTransactionDto replenishTransactionDto) {
+        sendMessage(replenishTransactionTopicName, replenishTransactionDto);
     }
 
-    public void sendTransaction(TransferTransactionDto replenishTransactionDto) {
-        send(transferTransactionTopicName, replenishTransactionDto);
+    public void send(TransferTransactionDto replenishTransactionDto) {
+        sendMessage(transferTransactionTopicName, replenishTransactionDto);
     }
 
-    private void send(String topic, Object object) {
+    private void sendMessage(String topic, Object object) {
         try {
             template.send(topic, object);
         } catch (Exception e) {

@@ -48,7 +48,7 @@ public class TestController {
                 .amount(BigDecimal.valueOf(1000))
                 .build();
 
-        transactionProducer.sendTransaction(transaction);
+        transactionProducer.send(transaction);
     }
 
 
