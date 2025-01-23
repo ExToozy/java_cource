@@ -20,8 +20,14 @@ public class KafkaErrorLogProducer {
     private String metricTopicName;
 
     public void send(DataSourceErrorLog errorLog) {
-        var metricRecord = getErrorLogProducerRecord(errorLog);
-        template.send(metricRecord);
+        try {
+            var metricRecord = getErrorLogProducerRecord(errorLog);
+            template.send(metricRecord);
+        } catch (Exception e) {
+            log.error("Error occurred while trying to send message", e);
+        } finally {
+            template.flush();
+        }
     }
 
     private ProducerRecord<String, Object> getErrorLogProducerRecord(DataSourceErrorLog errorLog) {

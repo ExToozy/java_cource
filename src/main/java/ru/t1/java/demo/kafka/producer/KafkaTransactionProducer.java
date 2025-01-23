@@ -20,11 +20,21 @@ public class KafkaTransactionProducer {
     @Value("${t1.kafka.topic.transfer_transactions}")
     private String transferTransactionTopicName;
 
-    public void send(ReplenishTransactionDto replenishTransactionDto) {
-        template.send(replenishTransactionTopicName, replenishTransactionDto);
+    public void sendTransaction(ReplenishTransactionDto replenishTransactionDto) {
+        send(replenishTransactionTopicName, replenishTransactionDto);
     }
 
-    public void send(TransferTransactionDto replenishTransactionDto) {
-        template.send(transferTransactionTopicName, replenishTransactionDto);
+    public void sendTransaction(TransferTransactionDto replenishTransactionDto) {
+        send(transferTransactionTopicName, replenishTransactionDto);
+    }
+
+    private void send(String topic, Object object) {
+        try {
+            template.send(topic, object);
+        } catch (Exception e) {
+            log.error("Error occurred while trying to send message", e);
+        } finally {
+            template.flush();
+        }
     }
 }

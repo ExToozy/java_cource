@@ -37,7 +37,7 @@ public class TestController {
     @Metric(executionTimeMillisLimit = 2000)
     @LogDataSourceError
     public void doSomething() throws InterruptedException {
-        Thread.sleep(3000L);
+//        Thread.sleep(3000L);
         throw new ClientException();
     }
 
@@ -48,7 +48,7 @@ public class TestController {
                 .amount(BigDecimal.valueOf(1000))
                 .build();
 
-        transactionProducer.send(transaction);
+        transactionProducer.sendTransaction(transaction);
     }
 
 

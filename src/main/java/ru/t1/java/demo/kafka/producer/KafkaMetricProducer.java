@@ -21,8 +21,14 @@ public class KafkaMetricProducer {
     private String metricTopicName;
 
     public void send(MetricDto metric) throws JsonProcessingException {
-        var metricRecord = getMetricProducerRecord(metric);
-        template.send(metricRecord);
+        try {
+            var metricRecord = getMetricProducerRecord(metric);
+            template.send(metricRecord);
+        } catch (Exception e) {
+            log.error("Error occurred while trying to send message", e);
+        } finally {
+            template.flush();
+        }
     }
 
     private ProducerRecord<String, Object> getMetricProducerRecord(MetricDto metric) throws JsonProcessingException {
