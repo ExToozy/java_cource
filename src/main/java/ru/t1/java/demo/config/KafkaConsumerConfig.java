@@ -43,8 +43,8 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
 
-        props.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, consumerProperties.getKeySerializer());
-        props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, StringDeserializer.class);
+        props.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, consumerProperties.getKeyDeserializer());
+        props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, consumerProperties.getValueDeserializer());
 
         DefaultKafkaConsumerFactory<String, Object> factory = new DefaultKafkaConsumerFactory<>(props);
         factory.setKeyDeserializer(new StringDeserializer());

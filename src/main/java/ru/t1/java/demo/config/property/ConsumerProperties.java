@@ -31,10 +31,10 @@ public class ConsumerProperties {
     private String heartbeatInterval;
 
     @Value("${t1.kafka.consumer.key-serializer}")
-    private String keySerializer;
+    private String keyDeserializer;
 
     @Value("${t1.kafka.consumer.value-serializer}")
-    private String valueSerializer;
+    private String valueDeserializer;
 
     @Value("${t1.kafka.consumer.trusted-packages:*}")
     private String trustedPackages;
