@@ -13,9 +13,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.UuidGenerator;
+import ru.t1.java.demo.enums.AccountStatus;
 import ru.t1.java.demo.enums.AccountType;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -30,12 +33,20 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @UuidGenerator
+    private UUID accountId;
+
     @ManyToOne
     private Client client;
 
     @Enumerated(EnumType.STRING)
     private AccountType accountType;
 
+    @Enumerated(EnumType.STRING)
+    private AccountStatus accountStatus;
+
     private BigDecimal balance;
+
+    private BigDecimal frozenAmount;
 
 }

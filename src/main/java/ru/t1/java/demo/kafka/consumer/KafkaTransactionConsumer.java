@@ -7,6 +7,7 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import ru.t1.java.demo.dto.transaction.ReplenishTransactionDto;
+import ru.t1.java.demo.dto.transaction.TransactionStatusDto;
 import ru.t1.java.demo.dto.transaction.TransferTransactionDto;
 import ru.t1.java.demo.service.TransactionService;
 
@@ -61,6 +62,25 @@ public class KafkaTransactionConsumer {
         }
 
         log.debug("Transfer transaction consumer: записи обработаны");
+    }
+
+    @KafkaListener(
+            topics = {"${t1.kafka.topic.transaction_result}"}
+    )
+    public void listenTransactionResolveResultTopic(List<TransactionStatusDto> transactionStatusDtoList,
+                                                    Acknowledgment ack) {
+        log.debug("Resolve result transaction consumer: Обработка новых сообщений");
+
+        try {
+            log.debug("message was received %s".formatted(transactionStatusDtoList));
+            transactionStatusDtoList.forEach(
+                    transactionService::handleTransactionStatusRecord
+            );
+        } finally {
+            ack.acknowledge();
+        }
+
+        log.debug("Resolve result transaction consumer: записи обработаны");
     }
 
 

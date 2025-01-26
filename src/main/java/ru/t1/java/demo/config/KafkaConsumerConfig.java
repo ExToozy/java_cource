@@ -10,6 +10,8 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.support.converter.BatchMessagingMessageConverter;
+import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import ru.t1.java.demo.config.property.ConsumerProperties;
@@ -42,7 +44,7 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
 
         props.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, consumerProperties.getKeySerializer());
-        props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, consumerProperties.getValueSerializer());
+        props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, StringDeserializer.class);
 
         DefaultKafkaConsumerFactory<String, Object> factory = new DefaultKafkaConsumerFactory<>(props);
         factory.setKeyDeserializer(new StringDeserializer());
@@ -62,9 +64,15 @@ public class KafkaConsumerConfig {
         factory.setConsumerFactory(consumerFactory);
         factory.setBatchListener(true);
         factory.setConcurrency(1);
+        factory.setBatchMessageConverter(new BatchMessagingMessageConverter(converter()));
+        factory.setRecordMessageConverter(new StringJsonMessageConverter());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.getContainerProperties().setPollTimeout(5000);
         factory.getContainerProperties().setMicrometerEnabled(true);
     }
 
+    @Bean
+    public StringJsonMessageConverter converter() {
+        return new StringJsonMessageConverter();
+    }
 }
