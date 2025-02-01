@@ -1,7 +1,7 @@
 package ru.t1.java.demo.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.t1.java.demo.dto.transaction.TransactionStatusDto;
@@ -9,6 +9,7 @@ import ru.t1.java.demo.dto.transaction.TransactionToResolveDto;
 import ru.t1.java.demo.enums.AccountStatus;
 import ru.t1.java.demo.enums.TransactionStatus;
 import ru.t1.java.demo.exception.TransactionException;
+import ru.t1.java.demo.kafka.producer.KafkaTransactionProducer;
 import ru.t1.java.demo.model.Account;
 import ru.t1.java.demo.model.Transaction;
 import ru.t1.java.demo.repository.AccountRepository;
@@ -23,12 +24,17 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
+
     private final TransactionRepository transactionRepository;
+
     private final AccountRepository accountRepository;
+
     private final AccountService accountService;
-    private final ApplicationEventPublisher eventPublisher;
+
+    private final KafkaTransactionProducer transactionProducer;
 
     @Override
     @Transactional
@@ -42,8 +48,6 @@ public class TransactionServiceImpl implements TransactionService {
         account.setBalance(account.getBalance().add(amount));
         accountRepository.save(account);
 
-        UUID transactionId = UUID.randomUUID();
-        System.out.printf("generated id=%s%n", transactionId);
         Transaction transaction = Transaction.builder()
                 .account(account)
                 .requestedAt(LocalDateTime.now())
@@ -51,7 +55,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .status(TransactionStatus.REQUESTED)
                 .build();
 
-        Transaction savedTransaction = transactionRepository.saveAndFlush(transaction);
+        Transaction savedTransaction = transactionRepository.save(transaction);
 
         TransactionToResolveDto transactionToResolveDto = TransactionToResolveDto.builder()
                 .clientId(account.getClient().getId())
@@ -62,7 +66,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .requestedAt(transaction.getRequestedAt())
                 .build();
 
-        eventPublisher.publishEvent(transactionToResolveDto);
+        transactionProducer.send(transactionToResolveDto);
     }
 
     @Override
@@ -93,9 +97,9 @@ public class TransactionServiceImpl implements TransactionService {
                         .status(TransactionStatus.REQUESTED)
                         .build()
         );
-        transactionRepository.saveAllAndFlush(transactions);
+        List<Transaction> savedTransactions = transactionRepository.saveAll(transactions);
 
-        List<TransactionToResolveDto> transactionToResolveDtos = transactions.stream().map(transaction ->
+        List<TransactionToResolveDto> transactionToResolveDtos = savedTransactions.stream().map(transaction ->
                 {
                     TransactionToResolveDto transactionToResolveDto = TransactionToResolveDto.builder()
                             .transactionId(transaction.getTransactionId())
@@ -109,8 +113,8 @@ public class TransactionServiceImpl implements TransactionService {
                     return transactionToResolveDto;
                 }
         ).toList();
-        
-        transactionToResolveDtos.forEach(eventPublisher::publishEvent);
+
+        transactionToResolveDtos.forEach(transactionProducer::send);
     }
 
     @Override
@@ -121,61 +125,54 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     @Transactional
     public void handleTransactionStatusRecord(TransactionStatusDto transactionStatusDto) {
+        Optional<Transaction> optionalTransaction = transactionRepository
+                .findByTransactionId(transactionStatusDto.getTransactionId());
+
+        Transaction transaction = optionalTransaction.orElse(null);
+
+        if (transaction == null) {
+            log.warn("Transaction with id = %s not found".formatted(transactionStatusDto.getTransactionId()));
+            return;
+        }
+
         if (transactionStatusDto.getStatus() == TransactionStatus.ACCEPTED) {
-            handleAcceptedTransaction(transactionStatusDto);
+            handleAcceptedTransaction(transaction);
         } else if (transactionStatusDto.getStatus() == TransactionStatus.BLOCKED) {
-            handleBlockedTransaction(transactionStatusDto);
+            handleBlockedTransaction(transaction);
         } else if (transactionStatusDto.getStatus() == TransactionStatus.REJECTED) {
-            handleRejectedTransaction(transactionStatusDto);
+            handleRejectedTransaction(transaction);
         }
     }
 
-    private void handleAcceptedTransaction(TransactionStatusDto transactionStatus) {
-        System.out.println(transactionStatus);
-        Optional<Transaction> optionalTransaction = transactionRepository
-                .findByTransactionId(transactionStatus.getTransactionId());
-
-        System.out.println(optionalTransaction);
-
-        optionalTransaction.ifPresent(transaction -> {
-            transaction.setStatus(TransactionStatus.ACCEPTED);
-            transactionRepository.save(transaction);
-        });
+    private void handleAcceptedTransaction(Transaction transaction) {
+        transaction.setStatus(TransactionStatus.ACCEPTED);
+        transactionRepository.save(transaction);
+        log.info("accepted transaction(id = %s) was handled".formatted(transaction.getTransactionId()));
     }
 
-    private void handleBlockedTransaction(TransactionStatusDto transactionStatus) {
-        Optional<Transaction> optionalTransaction = transactionRepository
-                .findByTransactionId(transactionStatus.getTransactionId());
-        System.out.println(optionalTransaction);
+    private void handleBlockedTransaction(Transaction transaction) {
+        Account account = transaction.getAccount();
+        account.setAccountStatus(AccountStatus.BLOCKED);
+        account.setBalance(account.getBalance().subtract(transaction.getAmount()));
+        account.setFrozenAmount(account.getFrozenAmount().add(transaction.getAmount()));
 
-        optionalTransaction.ifPresent(transaction -> {
-            Account account = transaction.getAccount();
-            account.setAccountStatus(AccountStatus.BLOCKED);
-            account.setBalance(account.getBalance().subtract(transaction.getAmount()));
-            account.setFrozenAmount(account.getFrozenAmount().add(transaction.getAmount()));
+        transaction.setStatus(TransactionStatus.BLOCKED);
 
-            transaction.setStatus(TransactionStatus.BLOCKED);
-
-            accountRepository.save(account);
-            transactionRepository.save(transaction);
-        });
+        accountRepository.save(account);
+        transactionRepository.save(transaction);
+        log.info("blocked transaction(id = %s) was handled".formatted(transaction.getTransactionId()));
     }
 
-    private void handleRejectedTransaction(TransactionStatusDto transactionStatus) {
-        Optional<Transaction> optionalTransaction = transactionRepository
-                .findByTransactionId(transactionStatus.getTransactionId());
+    private void handleRejectedTransaction(Transaction transaction) {
 
-        System.out.println(optionalTransaction);
+        Account account = transaction.getAccount();
+        account.setBalance(account.getBalance().subtract(transaction.getAmount()));
 
-        optionalTransaction.ifPresent(transaction -> {
-            Account account = transaction.getAccount();
-            account.setBalance(account.getBalance().subtract(transaction.getAmount()));
+        transaction.setStatus(TransactionStatus.REJECTED);
 
-            transaction.setStatus(TransactionStatus.REJECTED);
-
-            accountRepository.save(account);
-            transactionRepository.save(transaction);
-        });
+        accountRepository.save(account);
+        transactionRepository.save(transaction);
+        log.info("rejected transaction(id = %s) was handled".formatted(transaction.getTransactionId()));
     }
 
     private void validateTransfer(BigDecimal amount, Account accountFrom, Account accountTo) {

@@ -44,4 +44,7 @@ public class ConsumerProperties {
 
     @Value("${t1.kafka.consumer.auto-offset-reset:3000}")
     private String autoOffsetReset;
+
+    @Value("${t1.kafka.consumer.isolation-level}")
+    private String isolationLevel;
 }

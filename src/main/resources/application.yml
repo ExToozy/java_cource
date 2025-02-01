@@ -26,6 +26,8 @@ logging:
     ROOT: INFO
     ru.t1.java.demo.kafka: DEBUG
     ru.t1.java.demo.controller.TestController: DEBUG
+    org.springframework.kafka.transaction: TRACE
+    org.springframework.transaction: TRACE
 
 t1:
 
@@ -45,13 +47,17 @@ t1:
       auto-offset-reset: "earliest"
       heartbeat-interval-ms: 3000
       max-partition-fetch-bytes: 300000
+      isolation-level: read_committed
 
     producer:
+      acks: all
       retries: 3
       retry-backoff-ms: 1000
-      enable-idempotence: false
+      enable-idempotence: true
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      transaction-id-prefix: transaction-service-${random.value}-
+
 
     topic:
       accounts: t1_demo_accounts

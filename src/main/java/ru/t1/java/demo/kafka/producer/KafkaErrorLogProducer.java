@@ -6,12 +6,14 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.t1.java.demo.enums.ErrorType;
 import ru.t1.java.demo.model.DataSourceErrorLog;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
+@Transactional
 public class KafkaErrorLogProducer {
 
     private final KafkaTemplate<String, Object> template;

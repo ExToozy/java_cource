@@ -7,12 +7,14 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.t1.java.demo.dto.metric.MetricDto;
 import ru.t1.java.demo.enums.ErrorType;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
+@Transactional
 public class KafkaMetricProducer {
 
     private final KafkaTemplate<String, Object> template;

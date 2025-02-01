@@ -26,4 +26,10 @@ public class ProducerProperties {
 
     @Value("${t1.kafka.producer.value-serializer}")
     private String valueSerializer;
+
+    @Value("${t1.kafka.producer.transaction-id-prefix}")
+    private String transactionIdPrefix;
+
+    @Value("${t1.kafka.producer.acks}")
+    private String acks;
 }
