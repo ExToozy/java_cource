@@ -2,10 +2,10 @@ package ru.t1.java.demo.kafka.producer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import ru.t1.java.demo.config.property.TopicProperties;
 import ru.t1.java.demo.dto.transaction.ReplenishTransactionDto;
 import ru.t1.java.demo.dto.transaction.TransactionToResolveDto;
 import ru.t1.java.demo.dto.transaction.TransferTransactionDto;
@@ -17,21 +17,14 @@ import java.util.UUID;
 @Component
 @Transactional
 public class KafkaTransactionProducer {
+    
     private final KafkaTemplate<String, Object> template;
 
-
-    @Value("${t1.kafka.topic.replenish_transactions}")
-    private String replenishTransactionTopicName;
-
-    @Value("${t1.kafka.topic.transfer_transactions}")
-    private String transferTransactionTopicName;
-
-    @Value("${t1.kafka.topic.transaction_accept}")
-    private String transactionResolveTopic;
+    private final TopicProperties topics;
 
     public void send(ReplenishTransactionDto replenishTransactionDto) {
         sendMessage(
-                replenishTransactionTopicName,
+                topics.getReplenishTransactions(),
                 UUID.randomUUID().toString(),
                 replenishTransactionDto
         );
@@ -39,7 +32,7 @@ public class KafkaTransactionProducer {
 
     public void send(TransferTransactionDto replenishTransactionDto) {
         sendMessage(
-                transferTransactionTopicName,
+                topics.getTransferTransactions(),
                 UUID.randomUUID().toString(),
                 replenishTransactionDto
         );
@@ -47,7 +40,7 @@ public class KafkaTransactionProducer {
 
     public void send(TransactionToResolveDto transactionToResolveDto) {
         sendMessage(
-                transactionResolveTopic,
+                topics.getTransactionAccept(),
                 transactionToResolveDto.getAccountId().toString(),
                 transactionToResolveDto
         );

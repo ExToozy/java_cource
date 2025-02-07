@@ -25,12 +25,12 @@ public class KafkaAccountConsumer {
     @KafkaListener(
             topics = {"${t1.kafka.topic.accounts}"}
     )
-    public void listener(@Payload List<CreateAccountDto> messageList,
+    public void listener(@Payload List<CreateAccountDto> accountDtos,
                          Acknowledgment ack) {
         log.debug("Account consumer: Обработка новых сообщений");
 
         try {
-            List<Account> accounts = accountMapper.toEntityList(messageList);
+            List<Account> accounts = accountMapper.toEntityList(accountDtos);
             accountService.createMany(accounts);
         } finally {
             ack.acknowledge();

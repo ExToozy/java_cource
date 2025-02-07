@@ -1,31 +1,22 @@
 package ru.t1.java.demo.config;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
+import ru.t1.java.demo.config.property.TopicProperties;
 
 @Configuration
+@RequiredArgsConstructor
 public class KafkaTopicConfig {
 
-
-    @Value("${t1.kafka.topic.metrics}")
-    private String metricTopicName;
-
-    @Value("${t1.kafka.topic.accounts}")
-    private String accountTopicName;
-
-    @Value("${t1.kafka.topic.replenish_transactions}")
-    private String replenishTransactionTopicName;
-
-    @Value("${t1.kafka.topic.transfer_transactions}")
-    private String transferTransactionTopicName;
+    private final TopicProperties topics;
 
     @Bean
     public NewTopic metricTopic() {
         return TopicBuilder
-                .name(metricTopicName)
+                .name(topics.getMetrics())
                 .replicas(1)
                 .partitions(3)
                 .build();
@@ -34,7 +25,7 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic accountTopic() {
         return TopicBuilder
-                .name(accountTopicName)
+                .name(topics.getAccounts())
                 .replicas(1)
                 .partitions(3)
                 .build();
@@ -43,7 +34,7 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic replenishTransactionTopic() {
         return TopicBuilder
-                .name(replenishTransactionTopicName)
+                .name(topics.getReplenishTransactions())
                 .replicas(1)
                 .partitions(3)
                 .build();
@@ -52,7 +43,7 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic transferTransactionTopic() {
         return TopicBuilder
-                .name(transferTransactionTopicName)
+                .name(topics.getTransferTransactions())
                 .replicas(2)
                 .partitions(3)
                 .build();

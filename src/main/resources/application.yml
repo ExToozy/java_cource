@@ -32,16 +32,15 @@ logging:
 t1:
 
   kafka:
-    bootstrap:
-      server: ${KAFKA_SERVER:localhost:9092}
 
     consumer:
+      servers: ${KAFKA_SERVER:localhost:9092}
       group-id: t1-demo
       max-poll-records: 10
       max-poll-interval-ms: 300000
       session-timeout: 10000
-      key-serializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-serializer: org.apache.kafka.common.serialization.StringDeserializer
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       trusted-packages: "*"
       enable-auto-commit: false
       auto-offset-reset: "earliest"
@@ -50,6 +49,7 @@ t1:
       isolation-level: read_committed
 
     producer:
+      servers: ${KAFKA_SERVER:localhost:9092}
       acks: all
       retries: 3
       retry-backoff-ms: 1000
@@ -61,9 +61,9 @@ t1:
 
     topic:
       accounts: t1_demo_accounts
-      replenish_transactions: t1_demo_replenish_transactions
-      transfer_transactions: t1_demo_transfer_transactions
-      transaction_accept: t1_demo_transaction_accept
-      transaction_result: t1_demo_transaction_result
+      replenish-transactions: t1_demo_replenish_transactions
+      transfer-transactions: t1_demo_transfer_transactions
+      transaction-accept: t1_demo_transaction_accept
+      transaction-result: t1_demo_transaction_result
       metrics: t1_demo_metrics
 

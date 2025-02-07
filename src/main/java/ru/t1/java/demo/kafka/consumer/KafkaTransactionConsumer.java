@@ -21,14 +21,14 @@ public class KafkaTransactionConsumer {
     private final TransactionService transactionService;
 
     @KafkaListener(
-            topics = {"${t1.kafka.topic.replenish_transactions}"}
+            topics = {"${t1.kafka.topic.replenish-transactions}"}
     )
-    public void listenReplenishTransactionsTopic(@Payload List<ReplenishTransactionDto> messageList,
+    public void listenReplenishTransactionsTopic(@Payload List<ReplenishTransactionDto> replenishTransactionDtos,
                                                  Acknowledgment ack) {
         log.debug("Replenish transaction consumer: Обработка новых сообщений");
 
         try {
-            messageList.forEach(dto -> {
+            replenishTransactionDtos.forEach(dto -> {
                 transactionService.replenishBalance(
                         dto.getAccountId(),
                         dto.getAmount()
@@ -43,7 +43,7 @@ public class KafkaTransactionConsumer {
     }
 
     @KafkaListener(
-            topics = {"${t1.kafka.topic.transfer_transactions}"}
+            topics = {"${t1.kafka.topic.transfer-transactions}"}
     )
     public void listenTransferTransactionsTopic(@Payload List<TransferTransactionDto> messageList,
                                                 Acknowledgment ack) {
@@ -65,7 +65,7 @@ public class KafkaTransactionConsumer {
     }
 
     @KafkaListener(
-            topics = {"${t1.kafka.topic.transaction_result}"}
+            topics = {"${t1.kafka.topic.transaction-result}"}
     )
     public void listenTransactionResolveResultTopic(List<TransactionStatusDto> transactionStatusDtoList,
                                                     Acknowledgment ack) {

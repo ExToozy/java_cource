@@ -128,20 +128,17 @@ public class TransactionServiceImpl implements TransactionService {
         Optional<Transaction> optionalTransaction = transactionRepository
                 .findByTransactionId(transactionStatusDto.getTransactionId());
 
-        Transaction transaction = optionalTransaction.orElse(null);
-
-        if (transaction == null) {
-            log.warn("Transaction with id = %s not found".formatted(transactionStatusDto.getTransactionId()));
-            return;
-        }
-
-        if (transactionStatusDto.getStatus() == TransactionStatus.ACCEPTED) {
-            handleAcceptedTransaction(transaction);
-        } else if (transactionStatusDto.getStatus() == TransactionStatus.BLOCKED) {
-            handleBlockedTransaction(transaction);
-        } else if (transactionStatusDto.getStatus() == TransactionStatus.REJECTED) {
-            handleRejectedTransaction(transaction);
-        }
+        optionalTransaction.ifPresentOrElse(transaction -> {
+                    if (transactionStatusDto.getStatus() == TransactionStatus.ACCEPTED) {
+                        handleAcceptedTransaction(transaction);
+                    } else if (transactionStatusDto.getStatus() == TransactionStatus.BLOCKED) {
+                        handleBlockedTransaction(transaction);
+                    } else if (transactionStatusDto.getStatus() == TransactionStatus.REJECTED) {
+                        handleRejectedTransaction(transaction);
+                    }
+                },
+                () -> log.warn("Transaction with id = %s not found".formatted(transactionStatusDto.getTransactionId()))
+        );
     }
 
     private void handleAcceptedTransaction(Transaction transaction) {
