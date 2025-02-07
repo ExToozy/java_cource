@@ -99,19 +99,15 @@ public class TransactionServiceImpl implements TransactionService {
         );
         List<Transaction> savedTransactions = transactionRepository.saveAll(transactions);
 
-        List<TransactionToResolveDto> transactionToResolveDtos = savedTransactions.stream().map(transaction ->
-                {
-                    TransactionToResolveDto transactionToResolveDto = TransactionToResolveDto.builder()
-                            .transactionId(transaction.getTransactionId())
-                            .clientId(transaction.getAccount().getClient().getId())
-                            .accountId(transaction.getAccount().getAccountId())
-                            .accountBalance(transaction.getAccount().getBalance())
-                            .transactionAmount(transaction.getAmount())
-                            .requestedAt(transaction.getRequestedAt())
-                            .build();
-                    System.out.println(transactionToResolveDto);
-                    return transactionToResolveDto;
-                }
+        List<TransactionToResolveDto> transactionToResolveDtos = savedTransactions.stream().map(
+                transaction -> TransactionToResolveDto.builder()
+                        .transactionId(transaction.getTransactionId())
+                        .clientId(transaction.getAccount().getClient().getId())
+                        .accountId(transaction.getAccount().getAccountId())
+                        .accountBalance(transaction.getAccount().getBalance())
+                        .transactionAmount(transaction.getAmount())
+                        .requestedAt(transaction.getRequestedAt())
+                        .build()
         ).toList();
 
         transactionToResolveDtos.forEach(transactionProducer::send);
