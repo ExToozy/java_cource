@@ -4,23 +4,24 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import ru.t1.java.demo.config.property.TopicProperties;
 import ru.t1.java.demo.dto.metric.MetricDto;
 import ru.t1.java.demo.enums.ErrorType;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
+@Transactional
 public class KafkaMetricProducer {
 
     private final KafkaTemplate<String, Object> template;
 
-    @Value("${t1.kafka.topic.metrics}")
-    private String metricTopicName;
+    private final TopicProperties topics;
 
-    public void send(MetricDto metric) throws JsonProcessingException {
+    public void send(MetricDto metric) {
         try {
             var metricRecord = getMetricProducerRecord(metric);
             template.send(metricRecord);
@@ -33,7 +34,7 @@ public class KafkaMetricProducer {
 
     private ProducerRecord<String, Object> getMetricProducerRecord(MetricDto metric) throws JsonProcessingException {
         var metricRecord = new ProducerRecord<String, Object>(
-                metricTopicName,
+                topics.getMetrics(),
                 metric
         );
         metricRecord.headers().add("ERROR_TYPE", ErrorType.METRICS.name().getBytes());

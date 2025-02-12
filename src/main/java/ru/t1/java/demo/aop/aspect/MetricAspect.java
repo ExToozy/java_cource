@@ -13,8 +13,8 @@ import ru.t1.java.demo.aop.annotation.Metric;
 import ru.t1.java.demo.dto.metric.MetricDto;
 import ru.t1.java.demo.kafka.producer.KafkaMetricProducer;
 
-import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Optional;
 
 @Aspect
 @Component
@@ -33,30 +33,30 @@ public class MetricAspect {
         Object result = pJoinPoint.proceed();
         long afterTime = System.currentTimeMillis();
 
-        Annotation metricAnnotation = getMetricAnnotation(pJoinPoint);
-
-        if (metricAnnotation != null) {
-            try {
-                long executionTime = afterTime - beforeTime;
-                long limit = ((Metric) metricAnnotation).executionTimeMillisLimit();
-                if (executionTime > limit) {
-                    sendMetricToKafka(pJoinPoint, executionTime);
+        Optional<Metric> optionalMetricAnnotation = getMetricAnnotation(pJoinPoint);
+        optionalMetricAnnotation.ifPresent((metricAnnotation) -> {
+                    try {
+                        long executionTime = afterTime - beforeTime;
+                        long limit = metricAnnotation.executionTimeMillisLimit();
+                        if (executionTime > limit) {
+                            sendMetricToKafka(pJoinPoint, executionTime);
+                        }
+                    } catch (Throwable e) {
+                        log.error("Error occurred while trying send metric message to kafka: ", e);
+                    }
                 }
-            } catch (Throwable e) {
-                log.error("Error occurred while trying send metric message to kafka: ", e);
-            }
-        }
-
+        );
+        
         return result;
     }
 
-    private Annotation getMetricAnnotation(ProceedingJoinPoint pJoinPoint) {
+    private Optional<Metric> getMetricAnnotation(ProceedingJoinPoint pJoinPoint) {
         return Arrays.stream(((MethodSignature) pJoinPoint.getSignature())
                         .getMethod()
                         .getAnnotations())
                 .filter(annotation -> annotation instanceof Metric)
-                .findFirst()
-                .orElse(null);
+                .map(annotation -> (Metric) annotation)
+                .findFirst();
     }
 
     private void sendMetricToKafka(ProceedingJoinPoint pJoinPoint, long executionTime) throws JsonProcessingException {

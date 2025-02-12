@@ -1,7 +1,11 @@
+server:
+  port: 8081
+
 spring:
 
   application:
     name: t1-java-demo
+
 
   datasource:
     url: "jdbc:postgresql://localhost:5432/course_db"
@@ -13,40 +17,53 @@ spring:
     enabled: true
     change-log: db/changelog/db.changelog-master.xml
 
+  jpa:
+    show-sql: true
+
 
 logging:
   level:
     ROOT: INFO
     ru.t1.java.demo.kafka: DEBUG
     ru.t1.java.demo.controller.TestController: DEBUG
+    org.springframework.kafka.transaction: TRACE
+    org.springframework.transaction: TRACE
 
 t1:
+
   kafka:
-    bootstrap:
-      server: ${KAFKA_SERVER:localhost:9092}
 
     consumer:
+      servers: ${KAFKA_SERVER:localhost:9092}
       group-id: t1-demo
       max-poll-records: 10
       max-poll-interval-ms: 300000
       session-timeout: 10000
-      key-serializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       trusted-packages: "*"
       enable-auto-commit: false
       auto-offset-reset: "earliest"
       heartbeat-interval-ms: 3000
       max-partition-fetch-bytes: 300000
+      isolation-level: read_committed
 
     producer:
+      servers: ${KAFKA_SERVER:localhost:9092}
+      acks: all
       retries: 3
       retry-backoff-ms: 1000
-      enable-idempotence: false
+      enable-idempotence: true
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      transaction-id-prefix: transaction-service-${random.value}-
+
 
     topic:
       accounts: t1_demo_accounts
-      replenish_transactions: t1_demo_replenish_transactions
-      transfer_transactions: t1_demo_transfer_transactions
+      replenish-transactions: t1_demo_replenish_transactions
+      transfer-transactions: t1_demo_transfer_transactions
+      transaction-accept: t1_demo_transaction_accept
+      transaction-result: t1_demo_transaction_result
       metrics: t1_demo_metrics
+

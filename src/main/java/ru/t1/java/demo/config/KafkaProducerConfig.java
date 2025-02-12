@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.transaction.KafkaTransactionManager;
 import ru.t1.java.demo.config.property.ProducerProperties;
 
 import java.util.HashMap;
@@ -29,6 +30,8 @@ public class KafkaProducerConfig {
         props.put(ProducerConfig.RETRIES_CONFIG, producerProperties.getRetries());
         props.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, producerProperties.getRetryBackoffMs());
         props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, producerProperties.getEnableIdempotence());
+        props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, producerProperties.getTransactionIdPrefix());
+        props.put(ProducerConfig.ACKS_CONFIG, producerProperties.getAcks());
 
         return props;
     }
@@ -36,6 +39,13 @@ public class KafkaProducerConfig {
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
         return new DefaultKafkaProducerFactory<>(producerConfig());
+    }
+
+    @Bean
+    KafkaTransactionManager<String, Object> kafkaTransactionManager(
+            ProducerFactory<String, Object> producerFactory
+    ) {
+        return new KafkaTransactionManager<>(producerFactory);
     }
 
     @Bean

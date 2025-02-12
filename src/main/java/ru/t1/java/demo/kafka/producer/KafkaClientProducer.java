@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -12,6 +13,7 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 @Component
+@Transactional
 public class KafkaClientProducer {
 
     private final KafkaTemplate<String, Object> template;
