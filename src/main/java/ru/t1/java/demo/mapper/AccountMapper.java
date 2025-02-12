@@ -6,6 +6,8 @@ import ru.t1.java.demo.dto.account.AccountDto;
 import ru.t1.java.demo.dto.account.CreateAccountDto;
 import ru.t1.java.demo.model.Account;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
 
@@ -13,5 +15,7 @@ public interface AccountMapper {
     AccountDto toDto(Account account);
 
     Account toEntity(CreateAccountDto dto);
+
+    List<Account> toEntityList(List<CreateAccountDto> dtos);
 
 }
