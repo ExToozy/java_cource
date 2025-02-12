@@ -1,12 +1,14 @@
-package ru.t1.java.demo.aop;
+package ru.t1.java.demo.aop.aspect;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.*;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import ru.t1.java.demo.model.Client;
 
 import java.util.List;
@@ -24,7 +26,7 @@ public class LogAspect {
 
     }
 
-    @Before("@annotation(LogExecution)")
+    @Before("@annotation(ru.t1.java.demo.aop.annotation.LogExecution)")
     @Order(1)
     public void logAnnotationBefore(JoinPoint joinPoint) {
         log.info("ASPECT BEFORE ANNOTATION: Call method: {}", joinPoint.getSignature().getName());
@@ -35,14 +37,14 @@ public class LogAspect {
 //        log.error("ASPECT BEFORE: Call method: {}", joinPoint.getSignature().getName());
 //    }
 
-    @AfterThrowing(pointcut = "@annotation(LogException)")
+    @AfterThrowing(pointcut = "@annotation(ru.t1.java.demo.aop.annotation.LogException)")
     @Order(0)
     public void logExceptionAnnotation(JoinPoint joinPoint) {
         System.err.println("ASPECT EXCEPTION ANNOTATION: Logging exception: {}" + joinPoint.getSignature().getName());
     }
 
     @AfterReturning(
-            pointcut = "@annotation(HandlingResult)",
+            pointcut = "@annotation(ru.t1.java.demo.aop.annotation.HandlingResult)",
             returning = "result")
     public void handleResult(JoinPoint joinPoint, List<Client> result) {
         log.info("В результате выполнения метода {}", joinPoint.getSignature().toShortString());

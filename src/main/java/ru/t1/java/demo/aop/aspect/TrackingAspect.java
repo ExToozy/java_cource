@@ -1,4 +1,4 @@
-package ru.t1.java.demo.aop;
+package ru.t1.java.demo.aop.aspect;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -20,21 +20,21 @@ public class TrackingAspect {
 
     private static final AtomicLong START_TIME = new AtomicLong();
 
-    @Before("@annotation(ru.t1.java.demo.aop.Track)")
+    @Before("@annotation(ru.t1.java.demo.aop.annotation.Track)")
     public void logExecTime(JoinPoint joinPoint) throws Throwable {
         log.info("Старт метода: {}", joinPoint.getSignature().toShortString());
         START_TIME.addAndGet(System.currentTimeMillis());
     }
 
-    @After("@annotation(ru.t1.java.demo.aop.Track)")
+    @After("@annotation(ru.t1.java.demo.aop.annotation.Track)")
     public void calculateTime(JoinPoint joinPoint) {
         long afterTime = System.currentTimeMillis();
         log.info("Время исполнения: {} ms", (afterTime - START_TIME.get()));
         START_TIME.set(0L);
     }
 
-    @Around("@annotation(ru.t1.java.demo.aop.Track)")
-    public Object logExecTime(ProceedingJoinPoint pJoinPoint) {
+    @Around("@annotation(ru.t1.java.demo.aop.annotation.Track)")
+    public Object logExecTime(ProceedingJoinPoint pJoinPoint) throws Throwable {
         log.info("Вызов метода: {}", pJoinPoint.getSignature().toShortString());
         long beforeTime = System.currentTimeMillis();
         Object result = null;
@@ -42,6 +42,7 @@ public class TrackingAspect {
             result = pJoinPoint.proceed();//Important
         } catch (Throwable throwable) {
             throwable.printStackTrace();
+            throw throwable;
         }
         long afterTime = System.currentTimeMillis();
         log.info("Время исполнения: {} ms", (afterTime - beforeTime));

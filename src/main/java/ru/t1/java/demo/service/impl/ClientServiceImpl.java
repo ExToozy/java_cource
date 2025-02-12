@@ -5,14 +5,11 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.t1.java.demo.aop.Track;
-import ru.t1.java.demo.aop.HandlingResult;
-import ru.t1.java.demo.aop.LogExecution;
-import ru.t1.java.demo.dto.ClientDto;
+import ru.t1.java.demo.dto.client.ClientDto;
+import ru.t1.java.demo.mapper.ClientMapper;
 import ru.t1.java.demo.model.Client;
 import ru.t1.java.demo.repository.ClientRepository;
 import ru.t1.java.demo.service.ClientService;
-import ru.t1.java.demo.util.ClientMapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +22,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ClientServiceImpl implements ClientService {
     private final ClientRepository repository;
+
+    private final ClientMapper clientMapper;
 
     @PostConstruct
     void init() {
@@ -46,7 +45,7 @@ public class ClientServiceImpl implements ClientService {
         ClientDto[] clients = mapper.readValue(new File("src/main/resources/MOCK_DATA.json"), ClientDto[].class);
 
         return Arrays.stream(clients)
-                .map(ClientMapper::toEntity)
+                .map(clientMapper::toEntity)
                 .collect(Collectors.toList());
     }
 }
